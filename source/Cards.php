@@ -75,6 +75,7 @@ final class Cards
             'cards' => $cards,
             'page' => $page,
             'pages' => $pages,
+            'pagination' => Pagination::links($page, $pages, $base, $parameter, (int) $data['ID']),
             'previous' => $page > 1
                 ? add_query_arg($parameter, $page - 1, $base) . '#event-module-' . $data['ID']
                 : null,

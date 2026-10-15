@@ -25,6 +25,7 @@ require_once __DIR__ . '/source/TaxonomyFilter.php';
 require_once __DIR__ . '/source/QueryFields.php';
 require_once __DIR__ . '/source/EventManagerSource.php';
 require_once __DIR__ . '/source/Cards.php';
+require_once __DIR__ . '/source/Pagination.php';
 require_once __DIR__ . '/source/CardView.php';
 require_once __DIR__ . '/source/CardSupport.php';
 require_once __DIR__ . '/source/EventManagerOccurrence.php';

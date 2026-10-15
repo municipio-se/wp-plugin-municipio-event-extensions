@@ -85,15 +85,7 @@
         @endforelse
     </div>
     @if ($eventExtensions['pages'] > 1)
-        <nav aria-label="{{ sprintf(__('Pagination: %s', 'municipio-event-extensions'), wp_strip_all_tags($postTitle)) }}" class="u-margin__top--4">
-            @if ($eventExtensions['previous'])
-                <a data-event-navigation href="{!! esc_url($eventExtensions['previous']) !!}">{{ __('Previous', 'event-integration') }}</a>
-            @endif
-            <span>{{ $eventExtensions['page'] }} / {{ $eventExtensions['pages'] }}</span>
-            @if ($eventExtensions['next'])
-                <a data-event-navigation href="{!! esc_url($eventExtensions['next']) !!}">{{ __('Next', 'event-integration') }}</a>
-            @endif
-        </nav>
+        @include('event-pagination')
     @endif
     </div>
 @endif

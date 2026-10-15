@@ -172,8 +172,8 @@ foreach ($links as $link) {
     $href = $link->getAttribute('href');
     parse_str(parse_url($href, PHP_URL_QUERY) ?? '', $query);
     if (isset($query['event_page_' . $post->ID])) {
-        $found = true;
-        $check($query['event_page_' . $post->ID] === '2', 'Browser must receive page 2 as a query parameter.');
+        $found = $found || $query['event_page_' . $post->ID] === '2';
+        $check(ctype_digit($query['event_page_' . $post->ID]), 'Browser must receive a numeric page query parameter.');
         $check(($query['keep'] ?? '') === 'one&two', 'Encoded query values must survive rendering.');
         $check(
             parse_url($href, PHP_URL_FRAGMENT) === 'event-module-' . $post->ID,
@@ -182,4 +182,16 @@ foreach ($links as $link) {
     }
 }
 $check($found, 'Rendered pagination link must contain a usable page parameter.');
+$check($xpath->query('//nav//a[@aria-current="page"]')->length === 1, 'Exactly one page link must be marked current.');
+$check(
+    $xpath->query('//li[contains(@class,"c-pagination__item--previous")]//button[@disabled]')->length === 1,
+    'Previous control must be disabled on page one.',
+);
+$pagination = \MunicipioEventExtensions\Pagination::links(5, 10, '/?keep=yes', 'event_page_1', 1);
+$check(
+    array_column($pagination, 'number') === [1, null, 3, 4, 5, 6, 7, null, 10],
+    'Middle pages must retain five numbered pages and edge shortcuts.',
+);
+$pagination = \MunicipioEventExtensions\Pagination::links(10, 10, '/', 'event_page_1', 1);
+$check(array_column($pagination, 'number') === [1, null, 6, 7, 8, 9, 10], 'Last window must end at the last page.');
 echo "Rendered pagination URL passed.\n";
