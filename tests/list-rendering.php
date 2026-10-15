@@ -8,6 +8,7 @@ if (!$post instanceof WP_Post || get_field('mod_event_display', $post->ID) !== '
 $GLOBALS['post'] = $post;
 $module = new EventManagerIntegration\Module\Event($post);
 $module->template();
+$module->data += ['classes' => '', 'hideTitle' => false];
 $directory = EVENTMANAGERINTEGRATION_PATH . 'source/php/Module/Event/views/';
 $expected = EventManagerIntegration\Helper\RenderBlade::blade('event-list', $module->data, $directory);
 $actual = EventManagerIntegration\Helper\RenderBlade::blade('event-list', $module->data, dirname(__DIR__) . '/views');
