@@ -1,5 +1,5 @@
 @if (empty($eventExtensions))
-    {!! \EventManagerIntegration\Helper\RenderBlade::blade('event-index', get_defined_vars(), EVENTMANAGERINTEGRATION_PATH . 'source/php/Module/Event/views/') !!}
+    {!! \EventManagerIntegration\Helper\RenderBlade::blade('event-index', array_diff_key(get_defined_vars(), ['__env' => true]), EVENTMANAGERINTEGRATION_PATH . 'source/php/Module/Event/views/') !!}
 @else
     @if (empty($hideTitle) && !empty($postTitle))
         @typography(['element' => 'h2', 'variant' => 'h2', 'classList' => ['module-title']])
