@@ -154,3 +154,32 @@ $check(
     'Search must render a named GET form.',
 );
 echo wp_json_encode(['passed' => true, 'occurrences' => count($events), 'pages' => $first['pages']]) . "\n";
+
+// Assert browser-decoded hrefs, not just the PHP view data. WordPress esc_url
+// already escapes ampersands; escaping its output again corrupts query strings.
+$_GET = ['event_search_' . $post->ID => '', 'keep' => 'one&two'];
+$_SERVER['REQUEST_URI'] = '/?event_search_' . $post->ID . '=&keep=one%26two';
+$data['settings']['mod_event_pagination'] = true;
+$data['settings']['mod_event_per_page'] = 1;
+$renderData = $cards->data($data);
+$html = EventManagerIntegration\Helper\RenderBlade::blade('event-index', $renderData, dirname(__DIR__) . '/views');
+$dom = new DOMDocument();
+@$dom->loadHTML($html);
+$xpath = new DOMXPath($dom);
+$links = $xpath->query('//a[@data-event-navigation]');
+$found = false;
+foreach ($links as $link) {
+    $href = $link->getAttribute('href');
+    parse_str(parse_url($href, PHP_URL_QUERY) ?? '', $query);
+    if (isset($query['event_page_' . $post->ID])) {
+        $found = true;
+        $check($query['event_page_' . $post->ID] === '2', 'Browser must receive page 2 as a query parameter.');
+        $check(($query['keep'] ?? '') === 'one&two', 'Encoded query values must survive rendering.');
+        $check(
+            parse_url($href, PHP_URL_FRAGMENT) === 'event-module-' . $post->ID,
+            'Only the module anchor belongs in the fragment.',
+        );
+    }
+}
+$check($found, 'Rendered pagination link must contain a usable page parameter.');
+echo "Rendered pagination URL passed.\n";
