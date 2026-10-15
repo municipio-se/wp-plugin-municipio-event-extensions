@@ -1,0 +1,10 @@
+php-version = "8.2"
+
+[source]
+paths = ["municipio-event-extensions.php", "source"]
+
+[formatter]
+print-width = 120
+
+[linter.rules]
+literal-named-argument = { enabled = false }

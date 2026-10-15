@@ -1,0 +1,25 @@
+{
+  "name": "municipio/wp-plugin-municipio-event-extensions",
+  "description": "Server-rendered event presentation for Municipio 6.",
+  "type": "wordpress-plugin",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "composer/installers": "^2.3"
+  },
+  "require-dev": {
+    "carthage-software/mago": "1.43.0"
+  },
+  "scripts": {
+    "format": "vendor/bin/mago fmt",
+    "lint": "vendor/bin/mago lint"
+  },
+  "autoload": {
+    "psr-4": {
+      "MunicipioEventExtensions\\": "source/"
+    }
+  },
+  "extra": {
+    "installer-name": "municipio-event-extensions"
+  }
+}
