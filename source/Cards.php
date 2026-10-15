@@ -61,6 +61,10 @@ final class Cards
             }
         }
         $data['eventExtensions'] = [
+            'stylesheet' =>
+                plugins_url('assets/events.css', $this->directory . '/municipio-event-extensions.php')
+                    . '?ver='
+                    . filemtime($this->directory . '/assets/events.css'),
             'script' =>
                 plugins_url('assets/events.js', $this->directory . '/municipio-event-extensions.php')
                     . '?ver='

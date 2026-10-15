@@ -9,6 +9,7 @@
     {{-- The theme captures wpFooter before module rendering. Module scripts
          load here; the browser evaluates the same module URL only once. --}}
     <script type="module" src="{!! esc_url($eventExtensions['script']) !!}"></script>
+    <link rel="stylesheet" href="{!! esc_url($eventExtensions['stylesheet']) !!}">
     <div id="event-module-{{ $ID }}" data-event-module="{{ $ID }}" data-loading="{{ __('Loading events…', 'municipio-event-extensions') }}" data-result-message="{{ $eventExtensions['resultMessage'] }}">
     @foreach ($eventExtensions['search']['errors'] as $error)
         <p role="alert">{{ $error }}</p>
@@ -55,6 +56,7 @@
             <a data-event-navigation href="{!! esc_url($eventExtensions['search']['reset']) !!}">{{ __('Reset filters', 'event-integration') }}</a>
         </form>
     @endif
+    <div data-event-body>
     <div data-event-results tabindex="-1" role="region" aria-label="{{ $eventExtensions['resultMessage'] }}" class="o-grid {{ $classes }}">
         @forelse ($eventExtensions['cards'] as $eventCard)
             <div class="{{ $gridColumn }}">
@@ -85,8 +87,9 @@
         @endforelse
     </div>
     <div data-event-loading hidden aria-hidden="true">
-        @loader(['shape' => 'linear', 'color' => 'primary', 'size' => 'md'])
+        @loader(['shape' => 'linear', 'color' => 'black', 'size' => 'sm'])
         @endloader
+    </div>
     </div>
     @if ($eventExtensions['pages'] > 1)
         @include('event-pagination')
