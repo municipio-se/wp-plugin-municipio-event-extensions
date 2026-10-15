@@ -3,6 +3,7 @@
 // Run through `wp eval-file tests/integration.php MODULE_ID` on a local test site.
 use MunicipioEventExtensions\Cards;
 use MunicipioEventExtensions\EventManagerSource;
+use MunicipioEventExtensions\Search;
 
 $check = static function (bool $condition, string $message): void {
     if (!$condition) {
@@ -49,6 +50,30 @@ $cards = new Cards(dirname(__DIR__), $source);
 $_GET = [];
 $first = $cards->data($data)['eventExtensions'];
 $check(count($first['cards']) > 0, 'First page must be server-rendered.');
+$expectedCount = $data['settings']['mod_event_pagination']
+    ? min(count($events), (int) $data['settings']['mod_event_per_page'])
+    : count($events);
+$check(count($first['cards']) === $expectedCount, 'Card count must follow the index pagination settings.');
+$allLinks = [];
+for ($page = 1; $page <= $first['pages']; $page++) {
+    $_GET = ['event_page_' . $post->ID => (string) $page];
+    array_push($allLinks, ...array_column($cards->data($data)['eventExtensions']['cards'], 'link'));
+}
+$check(count($allLinks) === count($events), 'Pagination must include every occurrence exactly once.');
+$check(count(array_unique($allLinks)) === count($allLinks), 'Pages must not repeat occurrence links.');
+$unlimited = $data;
+$unlimited['settings']['mod_event_pagination'] = true;
+$unlimited['settings']['mod_event_per_page'] = -1;
+$unlimitedResult = $cards->data($unlimited)['eventExtensions'];
+$check(
+    count($unlimitedResult['cards']) === count($events) && $unlimitedResult['pages'] === 1,
+    'Legacy -1 page size must remain unlimited.',
+);
+$_GET = ['event_page_' . $post->ID => '999999'];
+$check(
+    $cards->data($data)['eventExtensions']['page'] === $first['pages'],
+    'Out-of-range page must clamp to last page.',
+);
 if ($first['pages'] > 1) {
     $_GET = ['event_page_' . $post->ID => '2'];
     $second = $cards->data($data)['eventExtensions'];
@@ -57,7 +82,35 @@ if ($first['pages'] > 1) {
 $_GET = ['event_page_' . $post->ID => ['invalid']];
 $check($cards->data($data)['eventExtensions']['page'] === 1, 'Array-valued page input must be rejected.');
 $_GET = ['searchString' => 'existing-filter-link'];
-$check($cards->data($data)['eventExtensions'] === null, 'Existing filter links must retain legacy rendering.');
+$check(Search::value($data) === 'existing-filter-link', 'Legacy search URLs must remain supported.');
+$check($cards->data($data)['eventExtensions'] !== null, 'Search links must work without React.');
+$_GET = [Search::parameter($data) => 'unlikely-event-match-7e0a931'];
+$check($source->occurrences($data) === [], 'Search must constrain the actual database query.');
+$_GET = [Search::parameter($data) => $events[0]['title']];
+$matches = $source->occurrences($data);
+$check(
+    in_array($events[0]['key'], array_column($matches, 'key'), true),
+    'Title search must retain matching occurrences.',
+);
+$other = $data;
+$other['ID'] = $post->ID + 1;
+$check(Search::value($other) === '', 'Module search must not affect other modules.');
+$_GET = [Search::parameter($data) => ['invalid']];
+$check(Search::value($data) === '', 'Array-valued search must be ignored.');
+$_GET = ['event_page_' . $post->ID => '4', 'event_page_other' => '2', 'keep' => ['a', 'b']];
+$controls = Search::view($data)['hidden'];
+$check(
+    !in_array('event_page_' . $post->ID, array_column($controls, 'name'), true),
+    'Search submission must reset its page.',
+);
+$check(
+    in_array(['name' => 'event_page_other', 'value' => '2'], $controls, true),
+    'Other module pages must survive submission.',
+);
+$check(
+    in_array(['name' => 'keep[1]', 'value' => 'b'], $controls, true),
+    'Array query parameters must survive submission.',
+);
 $_GET = [];
 $data['settings']['mod_event_filter_dates'] = true;
 $check($cards->data($data)['eventExtensions'] === null, 'Unimplemented filter controls must retain legacy rendering.');
@@ -77,6 +130,7 @@ $check(
     'Empty results must not fall back to a JS-only mount.',
 );
 $renderData = $cards->data($data);
+$renderData['eventExtensions']['search']['enabled'] = true;
 $renderData['eventExtensions']['cards'][0]['eventImage'] = [
     'src' => '/fixture-800.jpg',
     'alt' => '',
@@ -91,4 +145,8 @@ $check(
     'Blade must preserve responsive image attributes.',
 );
 $check(!str_contains($html, 'class="modularity-event-index'), 'Server-rendered cards must not mount React.');
+$check(
+    str_contains($html, 'method="get"') && str_contains($html, 'event_search_' . $post->ID),
+    'Search must render a named GET form.',
+);
 echo wp_json_encode(['passed' => true, 'occurrences' => count($events), 'pages' => $first['pages']]) . "\n";

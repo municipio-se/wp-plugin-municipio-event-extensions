@@ -6,7 +6,21 @@
             {!! $postTitle !!}
         @endtypography
     @endif
-    <div id="event-module-{{ $ID }}" class="o-grid {{ $classes }}">
+    <div id="event-module-{{ $ID }}">
+    @if ($eventExtensions['search']['enabled'])
+        <form method="get" action="{{ esc_url($eventExtensions['search']['action']) }}" class="u-margin__bottom--4">
+            @foreach ($eventExtensions['search']['hidden'] as $control)
+                <input type="hidden" name="{{ $control['name'] }}" value="{{ $control['value'] }}">
+            @endforeach
+            <label for="event-search-{{ $ID }}">{{ __('Search', 'event-integration') }}</label>
+            <input type="search" id="event-search-{{ $ID }}" name="{{ $eventExtensions['search']['name'] }}" value="{{ $eventExtensions['search']['value'] }}" maxlength="200">
+            <button type="submit">{{ __('Search', 'event-integration') }}</button>
+            @if ($eventExtensions['search']['value'] !== '')
+                <a href="{{ esc_url($eventExtensions['search']['reset']) }}">{{ __('Reset', 'event-integration') }}</a>
+            @endif
+        </form>
+    @endif
+    <div class="o-grid {{ $classes }}">
         @forelse ($eventExtensions['cards'] as $eventCard)
             <div class="{{ $gridColumn }}">
                 @card(array_diff_key($eventCard, ['eventImage' => true]))
@@ -46,4 +60,5 @@
             @endif
         </nav>
     @endif
+    </div>
 @endif

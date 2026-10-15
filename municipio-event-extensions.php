@@ -17,6 +17,7 @@ if (!defined('ABSPATH')) {
 }
 
 require_once __DIR__ . '/source/EventSource.php';
+require_once __DIR__ . '/source/Search.php';
 require_once __DIR__ . '/source/EventManagerSource.php';
 require_once __DIR__ . '/source/Cards.php';
 require_once __DIR__ . '/source/CardView.php';

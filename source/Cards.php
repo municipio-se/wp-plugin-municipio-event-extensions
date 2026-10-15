@@ -39,8 +39,9 @@ final class Cards
         }
         $events = $this->source->occurrences($data);
         $settings = $data['settings'];
-        $perPage = (bool) ($settings['mod_event_pagination'] ?? false)
-            ? max(1, (int) ($settings['mod_event_per_page'] ?? 10))
+        $configuredPerPage = (int) ($settings['mod_event_per_page'] ?? 10);
+        $perPage = (bool) ($settings['mod_event_pagination'] ?? false) && $configuredPerPage !== -1
+            ? max(1, $configuredPerPage)
             : max(1, count($events));
         $pages = max(1, (int) ceil(count($events) / $perPage));
         $parameter = 'event_page_' . absint($data['ID']);
@@ -52,6 +53,7 @@ final class Cards
         }
         $base = remove_query_arg(['currentPage', $parameter]);
         $data['eventExtensions'] = [
+            'search' => Search::view($data),
             'cards' => $cards,
             'page' => $page,
             'pages' => $pages,

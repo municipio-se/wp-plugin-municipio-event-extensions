@@ -27,6 +27,7 @@ final class EventManagerSource implements EventSource
             'start_date' => $today->format('Y-m-d H:i:s'),
             'end_date' => $today->modify("+{$days} days")->setTime(23, 59, 59)->format('Y-m-d H:i:s'),
             'display_limit' => -1,
+            'search_string' => Search::value($module),
             'categories' => $this->terms($module, 'categories'),
             'tags' => $this->terms($module, 'tags'),
             'groups' => $this->ids($module['groups']),
