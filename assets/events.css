@@ -38,7 +38,10 @@
     flex-wrap: nowrap;
   }
 
-  [data-event-track] .c-card .c-card__paint-container > .c-card__image-container,
+  [data-event-track]
+    .c-card
+    .c-card__paint-container
+    > .c-card__image-container,
   [data-event-track] .c-card .c-card__paint-container > .c-card__body {
     flex-basis: auto;
     width: 100%;
