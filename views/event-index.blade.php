@@ -94,5 +94,13 @@
     @if ($eventExtensions['pages'] > 1)
         @include('event-pagination')
     @endif
+    @if (!empty($settings['mod_event_archive']) && !empty($archive_url))
+        <div class="o-grid">
+            <div class="o-grid-12 u-display--flex u-justify-content--center">
+                @button(['href' => $archive_url, 'target' => '_self', 'color' => 'primary', 'text' => __('More events', 'event-integration')])
+                @endbutton
+            </div>
+        </div>
+    @endif
     </div>
 @endif
