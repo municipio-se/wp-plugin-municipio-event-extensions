@@ -5,6 +5,7 @@
         <li class="c-pagination__item--previous c-pagination__item">
             @button([
                 'href' => $eventExtensions['previous'] ?? '',
+                'target' => '_self',
                 'type' => 'button',
                 'size' => 'sm',
                 'color' => 'default',
@@ -25,6 +26,7 @@
                         @else
                             @button([
                                 'href' => $item['href'],
+                                'target' => '_self',
                                 'size' => 'sm',
                                 'color' => $item['current'] ? 'primary' : 'default',
                                 'text' => (string) $item['number'],
@@ -41,6 +43,7 @@
         <li class="c-pagination__item--next c-pagination__item">
             @button([
                 'href' => $eventExtensions['next'] ?? '',
+                'target' => '_self',
                 'type' => 'button',
                 'size' => 'sm',
                 'color' => 'default',

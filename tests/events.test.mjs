@@ -38,12 +38,14 @@ function setup(fetcher) {
     querySelector: () => result,
   };
   const attrs = new Map();
+  const indicator = { hidden: true };
   const module = {
     id: "event-module-1",
     dataset: { eventModule: "1", loading: "Loading" },
     setAttribute: (k, v) => attrs.set(k, v),
     removeAttribute: (k) => attrs.delete(k),
     replaceWith: () => calls.push("replace"),
+    querySelector: () => indicator,
   };
   const form = {
     closest: () => module,
@@ -95,13 +97,50 @@ function setup(fetcher) {
       target: form,
       preventDefault: () => calls.push("prevent"),
     });
-  return { win, submit, calls, status, replacement, handlers, attrs };
+  return {
+    win,
+    submit,
+    calls,
+    status,
+    replacement,
+    handlers,
+    attrs,
+    module,
+    indicator,
+  };
 }
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 const response = () => ({
   ok: true,
   redirected: false,
   text: async () => "fixture",
+});
+
+test("component pagination click uses JS and shows loading feedback", async () => {
+  let resolve;
+  const fixture = setup(
+    () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+  );
+  const link = {
+    href: "https://example.test/?event_page_1=2#event-module-1",
+    target: "_self",
+    closest: () => fixture.module,
+    hasAttribute: () => false,
+  };
+  fixture.handlers.click({
+    button: 0,
+    target: { closest: () => link },
+    preventDefault: () => fixture.calls.push("prevent"),
+  });
+  assert.equal(fixture.indicator.hidden, false);
+  assert.equal(fixture.attrs.get("aria-busy"), "true");
+  resolve(response());
+  await flush();
+  assert.deepEqual(fixture.calls, ["prevent", "history", "replace", "focus"]);
+  assert.equal(fixture.indicator.hidden, true);
 });
 
 test("successful update replaces module, preserves history state and focuses results", async () => {

@@ -84,6 +84,10 @@
             <p class="o-grid-12">{{ $no_events }}</p>
         @endforelse
     </div>
+    <div data-event-loading hidden aria-hidden="true">
+        @loader(['shape' => 'linear', 'color' => 'primary', 'size' => 'md'])
+        @endloader
+    </div>
     @if ($eventExtensions['pages'] > 1)
         @include('event-pagination')
     @endif

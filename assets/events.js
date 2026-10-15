@@ -44,6 +44,8 @@ export function install(win) {
     const operation = { controller, module };
     pending = operation;
     module.setAttribute("aria-busy", "true");
+    const indicator = module.querySelector("[data-event-loading]");
+    if (indicator) indicator.hidden = false;
     status.textContent = module.dataset.loading;
     // A hung enhancement must not prevent the ordinary navigation indefinitely.
     const timeout = win.setTimeout(() => controller.abort(), 15000);
@@ -70,8 +72,10 @@ export function install(win) {
       if (pending === operation) win.location.assign(url.href);
     } finally {
       win.clearTimeout(timeout);
-      if (pending === operation || pending?.module !== module)
+      if (pending === operation || pending?.module !== module) {
         module.removeAttribute("aria-busy");
+        if (indicator) indicator.hidden = true;
+      }
       if (pending === operation) pending = undefined;
     }
   }

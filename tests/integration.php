@@ -170,6 +170,10 @@ $links = $xpath->query('//a[@data-event-navigation]');
 $found = false;
 foreach ($links as $link) {
     $href = $link->getAttribute('href');
+    $check(
+        in_array($link->getAttribute('target'), ['', '_self'], true),
+        'Module navigation must stay in the current context for JS enhancement.',
+    );
     parse_str(parse_url($href, PHP_URL_QUERY) ?? '', $query);
     if (isset($query['event_page_' . $post->ID])) {
         $found = $found || $query['event_page_' . $post->ID] === '2';
