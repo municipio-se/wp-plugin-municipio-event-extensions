@@ -3,7 +3,10 @@
 // Run through `wp eval-file tests/integration.php MODULE_ID` on a local test site.
 use MunicipioEventExtensions\Cards;
 use MunicipioEventExtensions\EventManagerSource;
+use MunicipioEventExtensions\FilterRequest;
+use MunicipioEventExtensions\Filters;
 use MunicipioEventExtensions\Search;
+use MunicipioEventExtensions\TaxonomyFilter;
 
 $check = static function (bool $condition, string $message): void {
     if (!$condition) {
@@ -113,7 +116,7 @@ $check(
 );
 $_GET = [];
 $data['settings']['mod_event_filter_dates'] = true;
-$check($cards->data($data)['eventExtensions'] === null, 'Unimplemented filter controls must retain legacy rendering.');
+$check($cards->data($data)['eventExtensions'] !== null, 'Date controls must be server-rendered.');
 $data['settings']['mod_event_filter_dates'] = false;
 $data['mobileHorizontalTrack'] = true;
 $check($cards->data($data)['eventExtensions'] === null, 'Mobile carousel must retain legacy rendering.');
@@ -131,6 +134,7 @@ $check(
 );
 $renderData = $cards->data($data);
 $renderData['eventExtensions']['search']['enabled'] = true;
+$renderData['eventExtensions']['search']['searchVisible'] = true;
 $renderData['eventExtensions']['cards'][0]['eventImage'] = [
     'src' => '/fixture-800.jpg',
     'alt' => '',

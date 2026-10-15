@@ -10,6 +10,7 @@ declare(strict_types=1);
  * Requires PHP: 8.2
  * License: MIT
  * Text Domain: municipio-event-extensions
+ * Domain Path: /languages
  */
 
 if (!defined('ABSPATH')) {
@@ -18,11 +19,19 @@ if (!defined('ABSPATH')) {
 
 require_once __DIR__ . '/source/EventSource.php';
 require_once __DIR__ . '/source/Search.php';
+require_once __DIR__ . '/source/Filters.php';
+require_once __DIR__ . '/source/FilterRequest.php';
+require_once __DIR__ . '/source/TaxonomyFilter.php';
+require_once __DIR__ . '/source/QueryFields.php';
 require_once __DIR__ . '/source/EventManagerSource.php';
 require_once __DIR__ . '/source/Cards.php';
 require_once __DIR__ . '/source/CardView.php';
 require_once __DIR__ . '/source/CardSupport.php';
 require_once __DIR__ . '/source/EventManagerOccurrence.php';
+
+add_action('init', static function (): void {
+    load_plugin_textdomain('municipio-event-extensions', false, dirname(plugin_basename(__FILE__)) . '/languages');
+});
 
 add_action('after_setup_theme', static function (): void {
     $version = class_exists(\Composer\InstalledVersions::class)

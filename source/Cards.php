@@ -52,6 +52,14 @@ final class Cards
             $cards[] = CardView::fromEvent($event, $settings);
         }
         $base = remove_query_arg(['currentPage', $parameter]);
+        // Canonicalize the full selection before WordPress normalizes repeated
+        // legacy taxonomy keys to a single value while building page links.
+        foreach (['categories', 'tags'] as $taxonomy) {
+            $selected = TaxonomyFilter::selected($data, $taxonomy);
+            if ($selected !== []) {
+                $base = add_query_arg(FilterRequest::name($data, $taxonomy), $selected, $base);
+            }
+        }
         $data['eventExtensions'] = [
             'search' => Search::view($data),
             'cards' => $cards,

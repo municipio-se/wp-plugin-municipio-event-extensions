@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MunicipioEventExtensions;
 
-use DateTimeImmutable;
 use EventManagerIntegration\Helper\QueryEvents;
 
 final class EventManagerSource implements EventSource
@@ -20,12 +19,13 @@ final class EventManagerSource implements EventSource
             'age_from' => 0,
             'age_to' => 0,
         ];
-        $settings = $module['settings'];
-        $today = new DateTimeImmutable('today', wp_timezone());
-        $days = max(0, (int) ($settings['mod_event_interval'] ?? 0));
+        $state = Filters::state($module);
+        if ($state['errors'] !== []) {
+            return [];
+        }
         $params = [
-            'start_date' => $today->format('Y-m-d H:i:s'),
-            'end_date' => $today->modify("+{$days} days")->setTime(23, 59, 59)->format('Y-m-d H:i:s'),
+            'start_date' => $state['startDate'] . ' 00:00:00',
+            'end_date' => $state['endDate'] . ' 23:59:59',
             'display_limit' => -1,
             'search_string' => Search::value($module),
             'categories' => $this->terms($module, 'categories'),
@@ -34,8 +34,8 @@ final class EventManagerSource implements EventSource
             'lang' => is_string($module['lang']) ? $module['lang'] : '',
             'location' => ['lat' => (float) $module['lat'], 'lng' => (float) $module['lng']],
             'distance' => max(0, (float) $module['distance']),
-            'age_min' => (int) $module['age_from'],
-            'age_max' => (int) $module['age_to'],
+            'age_min' => $state['minAge'],
+            'age_max' => $state['maxAge'],
         ];
         // Match the existing index REST request. Its display_limit is unlimited;
         // mod_event_limit/hide_past_events belong to the legacy list query.
@@ -46,6 +46,10 @@ final class EventManagerSource implements EventSource
 
     private function terms(array $module, string $taxonomy): array
     {
+        $selected = TaxonomyFilter::selected($module, $taxonomy);
+        if ($selected !== []) {
+            return $selected;
+        }
         if ((bool) ($module['settings']['mod_event_' . $taxonomy . '_show'] ?? false)) {
             return [];
         }

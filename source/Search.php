@@ -21,33 +21,49 @@ final class Search
     {
         $parameter = self::parameter($module);
         $remove = ['currentPage', 'event_page_' . absint($module['ID']), 'searchString', $parameter];
+        foreach (FilterRequest::KEYS as $key) {
+            $remove[] = $key;
+            $remove[] = FilterRequest::name($module, $key);
+        }
         $base = remove_query_arg($remove);
         $hidden = [];
         // GET submission replaces the query string. Preserve other modules and
         // routing parameters as controls, including array-valued filters.
-        self::hidden(array_diff_key(wp_unslash($_GET), array_flip($remove)), '', $hidden);
+        QueryFields::hidden(array_diff_key(wp_unslash($_GET), array_flip($remove)), '', $hidden);
+        $controls = [];
+        $state = Filters::state($module);
+        foreach ([
+            'startDate' => 'dates',
+            'endDate' => 'dates',
+            'minAge' => 'age_group',
+            'maxAge' => 'age_group',
+            'categories' => 'categories',
+            'tags' => 'tags',
+        ] as $key => $setting) {
+            $visible = (bool) ($module['settings']['mod_event_filter_' . $setting] ?? false);
+            $name = FilterRequest::name($module, $key);
+            $controls[$key] = ['name' => $name, 'visible' => $visible, 'value' => $state[$key]];
+            if (in_array($key, ['categories', 'tags'], true)) {
+                $controls[$key]['options'] = TaxonomyFilter::options($module, $key);
+            }
+            if (!$visible) {
+                QueryFields::hidden([$name => $state[$key]], '', $hidden);
+            }
+        }
+        $searchVisible = (bool) ($module['settings']['mod_event_filter_search'] ?? false);
+        if (!$searchVisible && self::value($module) !== '') {
+            $hidden[] = ['name' => $parameter, 'value' => self::value($module)];
+        }
         return [
-            'enabled' => (bool) ($module['settings']['mod_event_filter_search'] ?? false),
+            'enabled' => $searchVisible || in_array(true, array_column($controls, 'visible'), true),
+            'searchVisible' => $searchVisible,
+            'controls' => $controls,
+            'errors' => $state['errors'],
             'name' => $parameter,
             'value' => self::value($module),
             'action' => strtok($base, '?') . '#event-module-' . absint($module['ID']),
             'reset' => $base . '#event-module-' . absint($module['ID']),
             'hidden' => $hidden,
         ];
-    }
-
-    private static function hidden(array $values, string $prefix, array &$result, int $depth = 0): void
-    {
-        if ($depth > 5) {
-            return;
-        }
-        foreach ($values as $key => $value) {
-            $name = $prefix === '' ? (string) $key : $prefix . '[' . $key . ']';
-            if (is_array($value)) {
-                self::hidden($value, $name, $result, $depth + 1);
-            } elseif (is_scalar($value)) {
-                $result[] = ['name' => $name, 'value' => (string) $value];
-            }
-        }
     }
 }
