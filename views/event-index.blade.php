@@ -6,7 +6,10 @@
             {!! $postTitle !!}
         @endtypography
     @endif
-    <div id="event-module-{{ $ID }}">
+    {{-- The theme captures wpFooter before module rendering. Module scripts
+         load here; the browser evaluates the same module URL only once. --}}
+    <script type="module" src="{{ esc_url($eventExtensions['script']) }}"></script>
+    <div id="event-module-{{ $ID }}" data-event-module="{{ $ID }}" data-loading="{{ __('Loading events…', 'municipio-event-extensions') }}" data-result-message="{{ $eventExtensions['resultMessage'] }}">
     @foreach ($eventExtensions['search']['errors'] as $error)
         <p role="alert">{{ $error }}</p>
     @endforeach
@@ -49,10 +52,10 @@
             @endforeach
             @button(['type' => 'submit', 'text' => __('Search', 'event-integration'), 'color' => 'primary'])
             @endbutton
-            <a href="{{ esc_url($eventExtensions['search']['reset']) }}">{{ __('Reset filters', 'event-integration') }}</a>
+            <a data-event-navigation href="{{ esc_url($eventExtensions['search']['reset']) }}">{{ __('Reset filters', 'event-integration') }}</a>
         </form>
     @endif
-    <div class="o-grid {{ $classes }}">
+    <div data-event-results tabindex="-1" role="region" aria-label="{{ $eventExtensions['resultMessage'] }}" class="o-grid {{ $classes }}">
         @forelse ($eventExtensions['cards'] as $eventCard)
             <div class="{{ $gridColumn }}">
                 @card(array_diff_key($eventCard, ['eventImage' => true]))
@@ -84,11 +87,11 @@
     @if ($eventExtensions['pages'] > 1)
         <nav aria-label="{{ sprintf(__('Pagination: %s', 'municipio-event-extensions'), wp_strip_all_tags($postTitle)) }}" class="u-margin__top--4">
             @if ($eventExtensions['previous'])
-                <a href="{{ esc_url($eventExtensions['previous']) }}">{{ __('Previous', 'event-integration') }}</a>
+                <a data-event-navigation href="{{ esc_url($eventExtensions['previous']) }}">{{ __('Previous', 'event-integration') }}</a>
             @endif
             <span>{{ $eventExtensions['page'] }} / {{ $eventExtensions['pages'] }}</span>
             @if ($eventExtensions['next'])
-                <a href="{{ esc_url($eventExtensions['next']) }}">{{ __('Next', 'event-integration') }}</a>
+                <a data-event-navigation href="{{ esc_url($eventExtensions['next']) }}">{{ __('Next', 'event-integration') }}</a>
             @endif
         </nav>
     @endif

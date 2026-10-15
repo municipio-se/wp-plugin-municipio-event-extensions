@@ -61,6 +61,16 @@ final class Cards
             }
         }
         $data['eventExtensions'] = [
+            'script' =>
+                plugins_url('assets/events.js', $this->directory . '/municipio-event-extensions.php')
+                    . '?ver='
+                    . filemtime($this->directory . '/assets/events.js'),
+            'resultMessage' => sprintf(
+                __('Showing %1$d events. Page %2$d of %3$d.', 'municipio-event-extensions'),
+                count($cards),
+                $page,
+                $pages,
+            ),
             'search' => Search::view($data),
             'cards' => $cards,
             'page' => $page,

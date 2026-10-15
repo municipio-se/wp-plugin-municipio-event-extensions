@@ -22,3 +22,10 @@ msgstr "Till-ålder får inte vara lägre än från-ålder."
 #, php-format
 msgid "Pagination: %s"
 msgstr "Sidindelning: %s"
+
+msgid "Loading events…"
+msgstr "Hämtar evenemang…"
+
+#, php-format
+msgid "Showing %1$d events. Page %2$d of %3$d."
+msgstr "Visar %1$d evenemang. Sida %2$d av %3$d."
