@@ -32,6 +32,22 @@
     scroll-snap-align: start;
   }
 
+  /* Wide carousel cards must not switch to the theme's horizontal card layout. */
+  [data-event-track] .c-card .c-card__paint-container {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  [data-event-track] .c-card .c-card__paint-container > .c-card__image-container,
+  [data-event-track] .c-card .c-card__paint-container > .c-card__body {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  [data-event-track] .c-card .c-card__paint-container > .c-card__body {
+    padding: calc(var(--base, 8px) * 2);
+  }
+
   [data-event-scroll-nav]:not([hidden]) {
     --base: 6px;
     display: flex;

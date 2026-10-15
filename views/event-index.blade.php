@@ -8,7 +8,7 @@
     @endif
     {{-- The theme captures wpFooter before module rendering. Module scripts
          load here; the browser evaluates the same module URL only once. --}}
-    <script type="module" src="{!! esc_url($eventExtensions['script']) !!}"></script>
+    {!! wp_get_script_tag(['type' => 'module', 'src' => $eventExtensions['script']]) !!}
     <link rel="stylesheet" href="{!! esc_url($eventExtensions['stylesheet']) !!}">
     <div id="event-module-{{ $ID }}" data-event-module="{{ $ID }}" data-loading="{{ __('Loading events…', 'municipio-event-extensions') }}" data-result-message="{{ $eventExtensions['resultMessage'] }}">
     @foreach ($eventExtensions['search']['errors'] as $error)
