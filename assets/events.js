@@ -29,8 +29,57 @@ export function moduleUrl(current, target, entries, id) {
   return url;
 }
 
+export function enhanceTrack(track, controls, win) {
+  const previous = controls.querySelector('[data-event-scroll="previous"]');
+  const next = controls.querySelector('[data-event-scroll="next"]');
+  const update = () => {
+    const box = track.getBoundingClientRect();
+    previous.disabled =
+      track.firstElementChild.getBoundingClientRect().left >= box.left - 1;
+    next.disabled =
+      track.lastElementChild.getBoundingClientRect().right <= box.right + 1;
+  };
+  const move = (direction) => {
+    const left = track.getBoundingClientRect().left;
+    const offsets = [...track.children].map(
+      (card) => card.getBoundingClientRect().left - left,
+    );
+    const distance =
+      direction > 0
+        ? offsets.find((offset) => offset > 1)
+        : offsets.findLast((offset) => offset < -1);
+    if (distance === undefined) return;
+    track.scrollBy({
+      left: distance,
+      behavior: win.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
+  };
+  previous.addEventListener("click", () => move(-1));
+  next.addEventListener("click", () => move(1));
+  track.addEventListener("scroll", update, { passive: true });
+  controls.hidden = false;
+  update();
+  return update;
+}
+
 export function install(win) {
   const doc = win.document;
+  const tracks = new WeakMap();
+  function prepareTracks(root) {
+    for (const track of root.querySelectorAll("[data-event-track]")) {
+      const controls = track
+        .closest("[data-event-module]")
+        .querySelector("[data-event-scroll-nav]");
+      if (!controls || !track.children.length) continue;
+      if (!tracks.has(track))
+        tracks.set(track, enhanceTrack(track, controls, win));
+      else tracks.get(track)();
+    }
+  }
+  prepareTracks(doc);
+  win.addEventListener("resize", () => prepareTracks(doc));
   let pending;
   const status = doc.createElement("p");
   status.className = "u-sr__only";
@@ -66,6 +115,7 @@ export function install(win) {
       // Only the server-rendered module is imported; page scripts are not run.
       win.history.pushState(win.history.state, "", url);
       module.replaceWith(replacement);
+      prepareTracks(replacement);
       replacement.querySelector("[data-event-results]")?.focus();
       status.textContent = replacement.dataset.resultMessage;
     } catch {

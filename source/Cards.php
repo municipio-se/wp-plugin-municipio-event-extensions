@@ -33,10 +33,6 @@ final class Cards
         if (($data['template'] ?? '') !== 'index') {
             return $data;
         }
-        if (!CardSupport::accepts($data)) {
-            $data['eventExtensions'] = null;
-            return $data;
-        }
         $events = $this->source->occurrences($data);
         $settings = $data['settings'];
         $configuredPerPage = (int) ($settings['mod_event_per_page'] ?? 10);

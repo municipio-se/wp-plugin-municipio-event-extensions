@@ -56,8 +56,16 @@
             <a data-event-navigation href="{!! esc_url($eventExtensions['search']['reset']) !!}">{{ __('Reset filters', 'event-integration') }}</a>
         </form>
     @endif
+    @if (!empty($mobileHorizontalTrack) && count($eventExtensions['cards']) > 1)
+        <nav data-event-scroll-nav hidden aria-label="{{ wp_strip_all_tags($postTitle) }}">
+            @foreach (['previous' => ['keyboard_arrow_left', __('Previous', 'event-integration')], 'next' => ['keyboard_arrow_right', __('Next', 'event-integration')]] as $direction => $control)
+                @button(['type' => 'button', 'size' => 'sm', 'color' => 'primary', 'icon' => $control[0], 'ariaLabel' => $control[1], 'classList' => ['c-button--pill'], 'attributeList' => ['data-event-scroll' => $direction, 'aria-controls' => 'event-results-' . $ID]])
+                @endbutton
+            @endforeach
+        </nav>
+    @endif
     <div data-event-body>
-    <div data-event-results tabindex="-1" role="region" aria-label="{{ $eventExtensions['resultMessage'] }}" class="o-grid {{ $classes }}">
+    <div id="event-results-{{ $ID }}" data-event-results @if (!empty($mobileHorizontalTrack)) data-event-track tabindex="0" @else tabindex="-1" @endif role="region" aria-label="{{ $eventExtensions['resultMessage'] }}" class="o-grid {{ $classes }}">
         @forelse ($eventExtensions['cards'] as $eventCard)
             <div class="{{ $gridColumn }}">
                 @card(array_diff_key($eventCard, ['eventImage' => true]))

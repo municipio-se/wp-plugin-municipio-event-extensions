@@ -14,3 +14,32 @@
 [data-event-module][aria-busy="true"] [data-event-results] {
   opacity: 0.3;
 }
+
+[data-event-scroll-nav] {
+  display: none;
+}
+
+@media (max-width: 895px) {
+  [data-event-track] {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+  }
+
+  [data-event-track] > div {
+    flex: 0 0 85%;
+    max-width: 85%;
+    scroll-snap-align: start;
+  }
+
+  [data-event-scroll-nav]:not([hidden]) {
+    --base: 6px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--grid-gap, 8px);
+  }
+
+  [data-event-scroll-nav] .c-button {
+    min-width: 0;
+  }
+}

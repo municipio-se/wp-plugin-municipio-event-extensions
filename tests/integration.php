@@ -119,7 +119,7 @@ $data['settings']['mod_event_filter_dates'] = true;
 $check($cards->data($data)['eventExtensions'] !== null, 'Date controls must be server-rendered.');
 $data['settings']['mod_event_filter_dates'] = false;
 $data['mobileHorizontalTrack'] = true;
-$check($cards->data($data)['eventExtensions'] === null, 'Mobile carousel must retain legacy rendering.');
+$check($cards->data($data)['eventExtensions'] !== null, 'Mobile carousel must render without React.');
 $data['mobileHorizontalTrack'] = false;
 $empty = new Cards(dirname(__DIR__), new class implements \MunicipioEventExtensions\EventSource {
     public function occurrences(array $module): array
@@ -149,6 +149,18 @@ $check(
     'Blade must preserve responsive image attributes.',
 );
 $check(!str_contains($html, 'class="modularity-event-index'), 'Server-rendered cards must not mount React.');
+$renderData['mobileHorizontalTrack'] = true;
+$mobileHtml = EventManagerIntegration\Helper\RenderBlade::blade(
+    'event-index',
+    $renderData,
+    dirname(__DIR__) . '/views',
+);
+$check(
+    str_contains($mobileHtml, 'data-event-track')
+    && str_contains($mobileHtml, 'data-event-scroll="next"')
+    && !str_contains($mobileHtml, 'class="modularity-event-index'),
+    'Mobile cards and controls must render without a React mount.',
+);
 $check(
     str_contains($html, 'method="get"') && str_contains($html, 'event_search_' . $post->ID),
     'Search must render a named GET form.',

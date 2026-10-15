@@ -5,7 +5,7 @@ const source = await readFile(
   new URL("../assets/events.js", import.meta.url),
   "utf8",
 );
-const { install, moduleUrl } = await import(
+const { install, moduleUrl, enhanceTrack } = await import(
   `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`
 );
 
@@ -33,6 +33,7 @@ function setup(fetcher) {
   const status = { setAttribute() {}, textContent: "" };
   const result = { focus: () => calls.push("focus") };
   const replacement = {
+    querySelectorAll: () => [],
     matches: () => true,
     dataset: { resultMessage: "Updated" },
     querySelector: () => result,
@@ -54,6 +55,7 @@ function setup(fetcher) {
   };
   const win = {
     document: {
+      querySelectorAll: () => [],
       createElement: () => status,
       body: { append() {} },
       addEventListener: (name, handler) => {
@@ -109,6 +111,57 @@ function setup(fetcher) {
     indicator,
   };
 }
+
+test("carousel arrows follow swipe position, boundaries and reduced motion", () => {
+  let position = 0;
+  const listeners = {};
+  const calls = [];
+  const button = () => ({
+    disabled: false,
+    addEventListener(name, handler) {
+      this[name] = handler;
+    },
+  });
+  const previous = button();
+  const next = button();
+  const controls = {
+    hidden: true,
+    querySelector: (selector) =>
+      selector.includes("previous") ? previous : next,
+  };
+  const children = [0, 300, 600].map((left) => ({
+    getBoundingClientRect: () => ({
+      left: left - position,
+      right: left - position + 280,
+    }),
+  }));
+  const track = {
+    children,
+    firstElementChild: children[0],
+    lastElementChild: children[2],
+    getBoundingClientRect: () => ({ left: 0, right: 330 }),
+    addEventListener: (name, handler) => {
+      listeners[name] = handler;
+    },
+    scrollBy: (options) => calls.push(options),
+  };
+  let reduced = false;
+  enhanceTrack(track, controls, { matchMedia: () => ({ matches: reduced }) });
+  assert.equal(controls.hidden, false);
+  assert.equal(previous.disabled, true);
+  next.click();
+  assert.deepEqual(calls.pop(), { left: 300, behavior: "smooth" });
+  // A manual swipe must become the source of truth for the next arrow click.
+  position = 340;
+  listeners.scroll();
+  assert.equal(previous.disabled, false);
+  reduced = true;
+  previous.click();
+  assert.deepEqual(calls.pop(), { left: -40, behavior: "auto" });
+  position = 550;
+  listeners.scroll();
+  assert.equal(next.disabled, true);
+});
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 const response = () => ({
   ok: true,
