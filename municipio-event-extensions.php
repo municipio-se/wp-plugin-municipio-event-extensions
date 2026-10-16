@@ -26,6 +26,8 @@ require_once __DIR__ . '/source/QueryFields.php';
 require_once __DIR__ . '/source/EventManagerSource.php';
 require_once __DIR__ . '/source/Cards.php';
 require_once __DIR__ . '/source/Assets.php';
+require_once __DIR__ . '/source/Archive.php';
+require_once __DIR__ . '/source/ArchiveIntegration.php';
 require_once __DIR__ . '/source/Pagination.php';
 require_once __DIR__ . '/source/CardView.php';
 require_once __DIR__ . '/source/EventManagerOccurrence.php';
@@ -47,5 +49,6 @@ add_action('after_setup_theme', static function (): void {
     ) {
         (new \MunicipioEventExtensions\Cards(__DIR__))->register();
         (new \MunicipioEventExtensions\Assets())->register();
+        (new \MunicipioEventExtensions\Archive())->register();
     }
 });
