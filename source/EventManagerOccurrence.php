@@ -20,8 +20,6 @@ final class EventManagerOccurrence
         };
         $location = get_post_meta((int) $event->ID, 'location', true);
         $imageId = (int) get_post_thumbnail_id((int) $event->ID);
-        $image = $imageId ? wp_get_attachment_image_src($imageId, 'large') : false;
-        $srcset = $imageId ? wp_get_attachment_image_srcset($imageId, 'large') : false;
         return [
             'key' => $event->ID . ':' . $event->start_date . ':' . $event->end_date,
             'title' => wp_strip_all_tags($event->post_title),
@@ -29,15 +27,7 @@ final class EventManagerOccurrence
             'occasion' => \EventManagerIntegration\App::formatEventDate($event->start_date, $event->end_date),
             'badge' => $badge->getTimestamp(),
             'location' => is_array($location) ? (string) ($location['title'] ?? '') : '',
-            'image' => $image
-                ? [
-                    'src' => $image[0],
-                    'alt' => '',
-                    'srcset' => is_string($srcset) ? $srcset : '',
-                    'sizes' => '(max-width: 767px) 100vw, 33vw',
-                    'width' => $image[1],
-                    'height' => $image[2],
-                ] : null,
+            'image' => EventImage::fromAttachment($imageId),
         ];
     }
 }

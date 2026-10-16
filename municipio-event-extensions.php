@@ -31,6 +31,7 @@ require_once __DIR__ . '/source/ArchiveIntegration.php';
 require_once __DIR__ . '/source/Pagination.php';
 require_once __DIR__ . '/source/CardView.php';
 require_once __DIR__ . '/source/EventManagerOccurrence.php';
+require_once __DIR__ . '/source/EventImage.php';
 
 add_action('init', static function (): void {
     load_plugin_textdomain('municipio-event-extensions', false, dirname(plugin_basename(__FILE__)) . '/languages');
