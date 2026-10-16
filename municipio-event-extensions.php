@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Plugin Name: Municipio Event Extensions
  * Description: Server-rendered event presentation for Municipio 6.
- * Version: 0.1.0
+ * Version: 0.1.1
  * Author: Whitespace
  * Requires PHP: 8.2
  * License: MIT

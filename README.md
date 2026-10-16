@@ -8,11 +8,12 @@ storage remain with Event Manager Integration.
 Activate alongside Event Manager Integration and Quality Extensions.
 Deactivating restores the existing views without a data migration.
 
-Version 0.1.0 has been tested with Municipio 6.43.3, Event Manager Integration
+Version 0.1.1 has been tested with Municipio 6.43.3, Event Manager Integration
 3.1.4, WordPress 6.9.10 and PHP 8.3 on Nora and migrated Höör installations.
-Municipio 7 is not supported. Other event flows, including the archive and
-submission forms, retain the legacy frontend bundle where needed. This package
-does not remove React or jQuery dependencies from the whole site.
+Municipio 7 is not supported. PHP-rendered archives and details omit the legacy
+frontend bundle. Submission forms, older maps and widgets retain it where
+needed. This package does not remove React or jQuery dependencies from the whole
+site.
 
 Install `municipio/wp-plugin-municipio-event-extensions` through a Composer VCS
 repository pointing to this GitHub repository, restricted with `only` to that
