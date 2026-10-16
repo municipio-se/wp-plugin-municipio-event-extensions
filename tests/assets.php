@@ -8,6 +8,7 @@ $wp_query = new WP_Query();
 $post = clone get_post((int) get_option('page_on_front'));
 $post->post_content = '';
 $originalModules = wp_cache_get('modularity_has_modules_' . $post->ID);
+$originalArchiveModules = wp_cache_get('modularity_has_modules_archive-event');
 $wp_query->queried_object = $post;
 $wp_query->queried_object_id = $post->ID;
 $wp_query->is_singular = true;
@@ -49,7 +50,34 @@ $post->post_content = '';
 $post->post_type = 'event';
 $enqueue();
 $assets->removeReplacedScripts();
-$check(wp_script_is('event-integration', 'enqueued'), 'Retain event detail support.');
+$check(!wp_script_is('event-integration', 'enqueued'), 'PHP event details need no legacy front bundle.');
+foreach (['single_event_information', 'single_event_accordion'] as $shortcode) {
+    $post->post_content = '[' . $shortcode . ']';
+    $enqueue();
+    $assets->removeReplacedScripts();
+    $check(wp_script_is('event-integration', 'enqueued'), 'Retain legacy shortcode map support.');
+}
+$post->post_content = '';
+$wp_query->is_singular = false;
+$wp_query->is_archive = true;
+$wp_query->is_post_type_archive = true;
+$wp_query->query_vars['post_type'] = 'event';
+wp_cache_set('modularity_has_modules_archive-event', []);
+$enqueue();
+$assets->removeReplacedScripts();
+$check(!wp_script_is('event-integration', 'enqueued'), 'PHP event archives need no legacy front bundle.');
+wp_cache_set('modularity_has_modules_archive-event', ['mod-event-submit']);
+$enqueue();
+$assets->removeReplacedScripts();
+$check(wp_script_is('event-integration', 'enqueued'), 'Archive form modules retain their scripts.');
+wp_cache_delete('modularity_has_modules_archive-event');
+if ($originalArchiveModules !== false) {
+    wp_cache_set('modularity_has_modules_archive-event', $originalArchiveModules);
+}
+$wp_query->is_archive = false;
+$wp_query->is_post_type_archive = false;
+$wp_query->is_singular = true;
+$wp_query->query_vars = [];
 $post->post_type = 'page';
 
 $assets->removeReplacedScripts();

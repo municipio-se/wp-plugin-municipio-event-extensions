@@ -35,18 +35,23 @@ final class Assets
 
     private function needsLegacyFront(): bool
     {
-        if (
-            is_singular('event')
-            || is_post_type_archive('event')
-            || is_tax(['event_categories', 'event_tags', 'event_groups'])
-            || is_active_widget(false, false, 'display_events', true)
-        ) {
+        // Municipio 6 event views render pagination, occasions and map links
+        // in PHP. Only the legacy consumers below need the shared bundle.
+        if (is_active_widget(false, false, 'display_events', true)) {
             return true;
         }
 
         $post = get_post();
-        if (!$post instanceof \WP_Post || has_shortcode($post->post_content, 'event_submit_form')) {
+        if (!$post instanceof \WP_Post) {
             return true;
+        }
+
+        // The older event-detail shortcodes can render the #event-map canvas;
+        // unlike the current view's ordinary map link it needs event-map.js.
+        foreach (['event_submit_form', 'single_event_information', 'single_event_accordion'] as $shortcode) {
+            if (has_shortcode($post->post_content, $shortcode)) {
+                return true;
+            }
         }
 
         $context = \Modularity\Helper\Wp::getArchiveSlug() ?: $post->ID;
