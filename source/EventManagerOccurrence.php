@@ -20,6 +20,11 @@ final class EventManagerOccurrence
         };
         $location = get_post_meta((int) $event->ID, 'location', true);
         $imageId = (int) get_post_thumbnail_id((int) $event->ID);
+        $description = html_entity_decode(
+            wp_strip_all_tags((string) ($event->post_content ?? ''), true),
+            ENT_QUOTES | ENT_HTML5,
+            'UTF-8',
+        );
         return [
             'key' => $event->ID . ':' . $event->start_date . ':' . $event->end_date,
             'title' => wp_strip_all_tags($event->post_title),
@@ -27,6 +32,7 @@ final class EventManagerOccurrence
             'occasion' => \EventManagerIntegration\App::formatEventDate($event->start_date, $event->end_date),
             'badge' => $badge->getTimestamp(),
             'location' => is_array($location) ? (string) ($location['title'] ?? '') : '',
+            'description' => trim((string) preg_replace('/\s+/u', ' ', $description)),
             'image' => EventImage::fromAttachment($imageId),
         ];
     }
