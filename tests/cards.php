@@ -95,27 +95,77 @@ namespace {
     );
 
     $settings = [
-        'mod_event_fields' => ['occasion', 'description'],
+        'mod_event_fields' => ['occasion', 'location', 'description'],
         'mod_event_descr_limit' => -1,
     ];
     $full = CardView::fromEvent($normalized, $settings);
+    $fullContent = '<div class="c-event-card__details">'
+        . '<div class="c-event-card__date">5 december 10.00–12.00</div>'
+        . '<div class="c-event-card__location">Nora centrum</div>'
+        . '<div class="c-event-card__description">Välkommen &amp; upptäck Nora.</div>'
+        . '</div>';
     check(
-        $full['content'] === '5 december 10.00–12.00<br>Välkommen &amp; upptäck Nora.',
-        'Selected unlimited description must be rendered safely after event metadata.',
+        $full['content'] === $fullContent,
+        'Selected fields must be rendered safely as distinct elements.',
     );
     check($full['eventImage'] === null, 'Description must work without an image.');
 
     $limited = CardView::fromEvent($normalized, [...$settings, 'mod_event_descr_limit' => 9]);
     check(
-        $limited['content'] === '5 december 10.00–12.00<br>Välkommen...',
+        str_contains($limited['content'], '<div class="c-event-card__description">Välkommen...</div>'),
         'Description limit must count UTF-8 characters and append an ellipsis.',
     );
 
     $hidden = CardView::fromEvent($normalized, ['mod_event_fields' => ['occasion']]);
-    check(!str_contains($hidden['content'], 'Välkommen'), 'Description must remain hidden when its field is not selected.');
+    check(
+        !str_contains($hidden['content'], 'Välkommen'),
+        'Description must remain hidden when its field is not selected.',
+    );
+    check(
+        !str_contains($hidden['content'], 'Nora centrum'),
+        'Location must remain hidden when its field is not selected.',
+    );
+
+    $locationOnly = CardView::fromEvent($normalized, ['mod_event_fields' => ['location']]);
+    check(
+        $locationOnly['content']
+            === '<div class="c-event-card__details"><div class="c-event-card__location">Nora centrum</div></div>',
+        'Location must render independently when date and description are disabled.',
+    );
+
+    $descriptionOnly = CardView::fromEvent($normalized, ['mod_event_fields' => ['description']]);
+    $descriptionOnlyContent = '<div class="c-event-card__details">'
+        . '<div class="c-event-card__description">Välkommen &amp; upptäck Nora.</div>'
+        . '</div>';
+    check(
+        $descriptionOnly['content'] === $descriptionOnlyContent,
+        'Description must render independently when date and location are disabled.',
+    );
+
+    $withImage = CardView::fromEvent(
+        [...$normalized, 'image' => ['src' => 'https://example.test/event.jpg']],
+        [...$settings, 'mod_event_fields' => [...$settings['mod_event_fields'], 'image']],
+    );
+    check($withImage['eventImage'] !== null, 'Selected image must remain available alongside structured fields.');
+    check(
+        in_array('c-card--has-image', $withImage['classList'], true),
+        'Cards with selected images must retain their image layout class.',
+    );
+    $imageDisabled = CardView::fromEvent(
+        [...$normalized, 'image' => ['src' => 'https://example.test/event.jpg']],
+        $settings,
+    );
+    check($imageDisabled['eventImage'] === null, 'An available image must remain hidden when its field is disabled.');
+    check(
+        !in_array('c-card--has-image', $imageDisabled['classList'], true),
+        'Cards with images disabled must retain the text-only layout.',
+    );
 
     $zero = CardView::fromEvent($normalized, [...$settings, 'mod_event_descr_limit' => 0]);
     check(!str_contains($zero['content'], '...'), 'A zero limit must not render an ellipsis-only description.');
 
-    echo "Event card description checks passed.\n";
+    $none = CardView::fromEvent($normalized, ['mod_event_fields' => []]);
+    check($none['content'] === '', 'Cards with all text fields disabled must not render an empty details wrapper.');
+
+    echo "Event card hierarchy checks passed.\n";
 }

@@ -10,10 +10,11 @@ final class CardView
     {
         $fields = is_array($settings['mod_event_fields'] ?? null) ? $settings['mod_event_fields'] : [];
         $content = [];
-        foreach (['occasion', 'location'] as $field) {
-            if (in_array($field, $fields, true) && $event[$field] !== '') {
-                $content[] = esc_html($event[$field]);
-            }
+        if (in_array('occasion', $fields, true) && ($event['occasion'] ?? '') !== '') {
+            $content[] = self::contentField('date', (string) $event['occasion']);
+        }
+        if (in_array('location', $fields, true) && ($event['location'] ?? '') !== '') {
+            $content[] = self::contentField('location', (string) $event['location']);
         }
         if (in_array('description', $fields, true) && ($event['description'] ?? '') !== '') {
             $description = self::limitDescription(
@@ -21,7 +22,7 @@ final class CardView
                 self::descriptionLimit($settings['mod_event_descr_limit'] ?? -1),
             );
             if ($description !== '') {
-                $content[] = esc_html($description);
+                $content[] = self::contentField('description', $description);
             }
         }
         $image = in_array('image', $fields, true) ? $event['image'] : null;
@@ -30,13 +31,20 @@ final class CardView
             'heading' => esc_html($event['title']),
             'link' => esc_url($event['url']),
             'context' => ['module.event.index'],
-            'content' => implode('<br>', $content),
+            'content' => $content === []
+                ? ''
+                : '<div class="c-event-card__details">' . implode('', $content) . '</div>',
             'eventImage' => $image,
             'date' => $badge ? ['timestamp' => $event['badge'], 'format' => 'j M'] : null,
             'dateBadge' => $badge,
             'ratio' => str_replace('-', ':', (string) ($settings['mod_event_image_ratio'] ?? '16-9')),
             'classList' => array_filter(['u-height--100', 'c-card--event', $image ? 'c-card--has-image' : null]),
         ];
+    }
+
+    private static function contentField(string $field, string $content): string
+    {
+        return sprintf('<div class="c-event-card__%s">%s</div>', $field, esc_html($content));
     }
 
     private static function descriptionLimit(mixed $value): int
